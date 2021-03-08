@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+import adafruit_dht
+import board
+import sys
+import time
+
+def print_config():
+    print("graph_title Temperature and Humidity")
+    print("graph_vlabel Temperature and Humidity")
+    print("graph_category dht22")
+    print("graph_order humidity1 humidity2 temperature1 temperature2")
+    print("temperature1.label Temperature 1")
+    print("temperature1.type GAUGE")
+    print("temperature1.graph LINE12")
+    print("temperature1.min -20")
+    print("temperature1.max 80")
+    print("temperature1.warning 25")
+    print("temperature1.critical 30")
+    print("temperature2.label Temperature 2")
+    print("temperature2.type GAUGE")
+    print("temperature2.graph LINE12")
+    print("temperature2.min -20")
+    print("temperature2.max 80")
+    print("temperature2.warning 25")
+    print("temperature2.critical 30")
+    print("humidity1.label Humidity 1")
+    print("humidity1.type GAUGE")
+    print("humidity1.graph LINE1")
+    print("humidity1.min 0")
+    print("humidity1.max 100")
+    print("humidity1.warning 60")
+    print("humidity1.critical 65")
+    print("humidity2.label Humidity 2")
+    print("humidity2.type GAUGE")
+    print("humidity2.graph LINE1")
+    print("humidity2.min 0")
+    print("humidity2.max 100")
+    print("humidity2.warning 60")
+    print("humidity2.critical 65")
+
+def get_DHT22_values(num, GPIO):
+    dhtDevice = adafruit_dht.DHT22(GPIO, use_pulseio=False)
+    # Print the values to the serial port
+    try:
+        temperature = dhtDevice.temperature
+        print('temperature%d.value %0.1f' % (num, temperature))
+        humidity = dhtDevice.humidity
+        print('humidity%d.value %0.1f' % (num, humidity))
+    except:
+        dhtDevice.exit()
+        raise RuntimeError("Read Sensor Error")
+    dhtDevice.exit()
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == 'config':
+        print_config()
+    elif len(sys.argv) == 2 and sys.argv[1] == 'autoconf':
+        print('yes')
+    elif len(sys.argv) == 1 or len(sys.argv) == 2 and sys.argv[1] == 'fetch':
+        error=0
+        # Some docs say it'll be called with fetch, some say no arg at all
+        try:
+            get_DHT22_values(1, board.D4)
+        except:
+            time.sleep(2.2)
+            try:
+                get_DHT22_values(1, board.D4)
+            except:
+                error=1
+        try:
+            get_DHT22_values(2, board.D22)
+        except:
+            time.sleep(2.2)
+            try:
+                get_DHT22_values(2, board.D22)
+            except:
+                error=1
+        if error == 1:
+            sys.exit("Couldn't retrieve DHT22 values")
